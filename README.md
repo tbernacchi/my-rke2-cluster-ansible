@@ -31,7 +31,9 @@ This workaround [here](https://stackoverflow.com/questions/40684543/how-to-make-
 ## Usage
   * This project it's divided in three parts `roles` containing a common role `common_setup` for all of the roles;
   * To create the cluster we must first run the role `first_node` which will set up the first node and create the token needed for the remaining nodes;
-  * The RKE2 version for the cluster it's setting on the command line using the argument `--extra-vars`; i.e `--extra-vars "rke2_version=v1.23.16+rke2r1"`;
+  * The RKE2 version for the cluster it's setting on the command line using the argument `--extra-vars`;
+  * For this lab I used [v1.23.16+rke2r1](https://github.com/rancher/rke2/releases/tag/v1.23.16%2Brke2r1); 
+  * For other releases available please check https://github.com/rancher/rke2/releases;
 
 ## How to
 ```bash
@@ -47,11 +49,11 @@ If everything went well there will be a copy of the `/etc/rancher/rke2/rke2.yaml
 
 ## Table of Contents
 * **RKE2**
-  [Official Website](https://docs.rke2.io/)
-  [RKE2 requirements](https://docs.rke2.io/install/requirements)
-  [RKE2 HA](https://docs.rke2.io/install/ha) 
-  [RKE2 Configuration options](https://docs.rke2.io/install/configuration) 
-  
+  * [Official Website](https://docs.rke2.io/)
+  * [RKE2 requirements](https://docs.rke2.io/install/requirements)
+  * [RKE2 HA](https://docs.rke2.io/install/ha)
+  * [RKE2 Configuration options](https://docs.rke2.io/install/configuration) 
+
 * **Ansible**
   * [Official Website](https://www.ansible.com)
   * [Official Docs](https://docs.ansible.com)
