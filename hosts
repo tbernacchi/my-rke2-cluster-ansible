@@ -1,0 +1,11 @@
+[first_node]
+167.99.11.191 ansible_ssh_user=root ansible_ssh_private_key_file=/Users/tadeu/.ssh/id_rsa ansible_python_interpreter=/usr/bin/python3
+
+[rke2_servers]
+146.190.218.36 ansible_ssh_user=root ansible_ssh_private_key_file=/Users/tadeu/.ssh/id_rsa ansible_python_interpreter=/usr/bin/python3
+146.190.218.41 ansible_ssh_user=root ansible_ssh_private_key_file=/Users/tadeu/.ssh/id_rsa ansible_python_interpreter=/usr/bin/python3
+
+[rke2_agents]
+159.223.132.208 ansible_ssh_user=root ansible_ssh_private_key_file=/Users/tadeu/.ssh/id_rsa ansible_python_interpreter=/usr/bin/python3
+159.223.142.165 ansible_ssh_user=root ansible_ssh_private_key_file=/Users/tadeu/.ssh/id_rsa ansible_python_interpreter=/usr/bin/python3
+

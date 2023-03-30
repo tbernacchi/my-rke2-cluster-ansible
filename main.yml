@@ -1,0 +1,31 @@
+---
+- hosts: first_node
+  any_errors_fatal: true
+  #become: yes 
+  user: root
+  roles:
+    - role: common_setup
+    - role: first_node
+  #serial: 1 
+  tags: first_node
+
+- hosts: rke2_servers
+  any_errors_fatal: true
+  #become: yes 
+  user: root
+  roles: 
+    - role: common_setup
+    - role: rke2_servers
+  #serial: 1 
+  tags: rke2_servers
+
+- hosts: rke2_agents
+  any_errors_fatal: true
+  #become: yes
+  user: root
+  roles: 
+    - role: common_setup
+    - role: rke2_agents
+  #serial: 3 
+  tags: rke2_agents
+

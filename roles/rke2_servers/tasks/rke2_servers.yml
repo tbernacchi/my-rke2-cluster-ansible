@@ -1,0 +1,71 @@
+---
+- name: Does the /etc/rancher/rke2/config.yaml already exist? 
+  stat:
+    path: /etc/rancher/rke2/config.yaml
+  register: config_yaml 
+  changed_when: false 
+
+- name: Copying config.yaml from buffer to the rke2_servers...
+  copy: src=buffer/config.yaml dest=/tmp/config.yaml mode=0644
+  loop: "{{ groups['rke2_servers'] }}"
+  delegate_to: "{{ item }}"
+  when: not config_yaml.stat.exists
+
+- name: Checking if there is a kubelet process present on host...
+  shell: ps -C kubelet -F -ww --no-headers
+  register: kubelet_check
+  failed_when: false
+
+- name: Does the /var/lib/rancher/rke2/bin/kubectl already exist? 
+  stat:
+    path: /var/lib/rancher/rke2/bin/kubectl
+  register: kubectl
+  failed_when: false 
+
+- name: Downloading RKE2 install.sh script... 
+  get_url:
+    url: https://get.rke2.io
+    validate_certs: false
+    dest: "/root/install.sh"
+    mode: 0755
+  when: kubelet_check.rc != 0 and not kubectl.stat.exists
+
+- name: Setting RKE2 /tmp/install.sh script...
+  shell: echo "INSTALL_RKE2_VERSION={{ rke2_version }} INSTALL_RKE2_TYPE=agent /root/install.sh" > /tmp/install.sh
+  when: kubelet_check.rc != 0 and not kubectl.stat.exists
+
+- name: Running /tmp/install.sh script...
+  shell: sh /tmp/install.sh
+  when: kubelet_check.rc != 0 and not kubectl.stat.exists
+
+- name: Ensure /etc/rancher/rke2 directory exists...
+  file:
+    path: /etc/rancher/rke2
+    state: directory
+    recurse: yes
+    owner: root 
+    group: root
+    mode: 0755
+  when: kubelet_check.rc != 0 and not kubectl.stat.exists
+
+- name: Moving /tmp/config.yaml to /etc/rancher/rke2/config.yaml...
+  copy: src=/tmp/config.yaml dest=/etc/rancher/rke2/config.yaml mode=0644 remote_src=True
+  #when: not config_yaml.stat.exists
+
+- name: Starting rke2-server...
+  systemd:
+    name: rke2-server            
+    state: started
+    enabled: yes
+    #when: kubelet_check.rc != 0 and not kubectl.stat.exists
+    when: kubelet_check.rc != 0 
+    delay: 10s
+
+- name: Symlink kubectl...
+  file:
+    src: /var/lib/rancher/rke2/bin/kubectl
+    dest: /usr/local/bin/kubectl 
+    state: link
+    when: kubelet_check.rc != 0 
+    #when: kubelet_check.rc != 0 and not kubectl.stat.exists
+

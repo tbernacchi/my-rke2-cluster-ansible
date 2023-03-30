@@ -1,0 +1,9 @@
+write-kubeconfig-mode: "0644"
+tls-san:
+  - "*.support.rancher.space"
+node-label:
+  - "rke2=cluster"
+  - "something=amazing"
+debug: true
+node-taint:
+  - "CriticalAddonsOnly=true:NoExecute"

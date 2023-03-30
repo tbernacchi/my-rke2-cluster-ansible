@@ -1,0 +1,126 @@
+---
+- name: Does this server it's in ready state?  
+  shell: '/var/lib/rancher/rke2/bin/kubectl --kubeconfig /etc/rancher/rke2/rke2.yaml get nodes | awk "{ print $2 }" | grep -iv status'
+  register: ready
+  failed_when: false
+
+- name: Stat /usr/local/bin/rke2
+  stat: 
+    path: /usr/local/bin/rke2
+  register: rke2
+  when: ready.rc != 0 
+
+#- name: Stopping rke2-server to reset the cluster...the cluster was not in Ready state...
+#  systemd:
+#    name: rke2-server            
+#    state: stopped
+#    enabled: yes
+#  when: rke2 is true
+#
+#- name: Resetting the RKE2 cluster...
+#  shell: "/usr/local/bin/rke2 server --cluster-reset" 
+#  when: rke2 is true
+
+- name: Checking if there is a kubelet process present on host...
+  shell: ps -C kubelet -F -ww --no-headers
+  register: kubelet_check
+  failed_when: false
+
+- name: Does the /var/lib/rancher/rke2/bin/kubectl already exist?
+  stat:
+    path: /var/lib/rancher/rke2/bin/kubectl
+  register: kubectl
+  failed_when: false
+
+- name: Downloading RKE2 install.sh script 
+  get_url:
+    url: https://get.rke2.io
+    validate_certs: false
+    dest: "/root/install.sh"
+    mode: 0755
+  when: ready.rc != 0 
+
+- name: Setting RKE2 /tmp/install.sh script...
+  shell: echo "INSTALL_RKE2_VERSION={{ rke2_version }} INSTALL_RKE2_TYPE=agent /root/install.sh" > /tmp/install.sh
+  when: kubelet_check.rc != 0 and not kubectl.stat.exists
+
+- name: Running /tmp/install.sh script...
+  shell: sh /tmp/install.sh
+  when: kubelet_check.rc != 0 and not kubectl.stat.exists
+
+- name: Ensure /etc/rancher/rke2 directory exists.
+  file:
+    path: /etc/rancher/rke2
+    state: directory
+    recurse: yes
+    owner: root 
+    group: root
+    mode: 0755
+  when: ready.rc != 0 
+
+- name: Creating /etc/rancher/rke2/config.yaml
+  file:
+    path: /etc/rancher/rke2/config.yaml
+    state: touch
+    owner: root 
+    group: root
+    mode: 0644
+  when: ready.rc != 0 
+
+- name: Copying /etc/rancher/rke2/config.yaml template
+  template:
+    src: ../templates/config.yaml
+    dest: /etc/rancher/rke2/config.yaml
+    owner: root
+    group: root
+    mode: '0644'
+  when: ready.rc != 0 
+
+- name: Starting rke2-server
+  systemd:
+    name: rke2-server            
+    state: started
+    enabled: yes
+  when: ready.rc != 0 
+
+- name: Stat /usr/local/bin/kubectl
+  stat: 
+    path: /usr/local/bin/kubectl
+  register: kubectl
+  when: ready.rc != 0 
+
+- name: Symlink kubectl 
+  file:
+    src: /var/lib/rancher/rke2/bin/kubectl
+    dest: /usr/local/bin/kubectl 
+    state: link
+  when: ready.rc != 0 and kubectl.stat.exists == False
+
+- name: Creating shell script /usr/local/bin/create-config.sh
+  template:
+    src: ../templates/create-config.sh
+    dest: /usr/local/bin/create-config.sh
+    owner: root
+    group: root
+    mode: '0755'
+  when: ready.rc != 0 
+
+- name: Running /usr/local/bin/create-config.sh
+  command: sh /usr/local/bin/create-config.sh
+  when: ready.rc != 0 
+
+- name: Fetch the file /tmp/config.yaml from the first_node 
+  run_once: yes
+  fetch: src=/tmp/config.yaml dest=buffer/ flat=yes
+  delegate_to: "{{ groups['first_node'][0] }}"
+  when: ready.rc != 0 
+
+- name: Copying /tmp/config.yaml from first_node to rke2_servers
+  copy: src=buffer/config.yaml dest=/tmp/config.yaml mode=0644
+  loop: "{{ groups['rke2_servers'] }}"
+  delegate_to: "{{ item }}"
+  when: ready.rc != 0 
+
+- name: Fetch /etc/rancher/rke2/rke2.yaml from remote host...
+  fetch: src=/etc/rancher/rke2/rke2.yaml dest=buffer/ flat=yes
+

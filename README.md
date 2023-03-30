@@ -19,22 +19,39 @@
 
 If you got this error trying to install the ansible.utils:
 
-```ansible-galaxy collection install -r requirements.yml
+```bash 
+⇒ ansible-galaxy collection install -r requirements.yml
 Starting galaxy collection install process
 Process install dependency map
-ERROR! Unknown error when attempting to call Galaxy at 'https://galaxy.ansible.com/api/': <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1123)>```
+ERROR! Unknown error when attempting to call Galaxy at 'https://galaxy.ansible.com/api/': <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1123)>
+```
 
 This workaround [here](https://stackoverflow.com/questions/40684543/how-to-make-python-use-ca-certificates-from-mac-os-truststore#:~:text=Solution%20for%20MacOS%20or%20Linux%20with%20latest%20Python%20versions%20installed%20either%20as%20standalone%20or%20via%20port%20or%20brew) it worked for me.
 
 ## Usage
+  * This project it's divided in three parts `roles` containing a common role `common_setup` for all of the roles;
+  * To create the cluster we must first run the role `first_node` which will set up the first node and create the token needed for the remaining nodes;
+  * The RKE2 version for the cluster it's setting on the command line using the argument `--extra-vars`; i.e `--extra-vars "rke2_version=v1.23.16+rke2r1"`;
 
+## How to
+```bash
+ansible-playbook -i hosts main.yml --limit first_node --tags "first_node" --extra-vars "rke2_version=v1.23.16+rke2r1"
+ansible-playbook -i hosts main.yml --limit rke2_servers --tags "rke2_servers" --extra-vars "rke2_version=v1.23.16+rke2r1"
+ansible-playbook -i hosts main.yml --limit rke2_agents --tags "rke2_agents" --extra-vars "rke2_version=v1.23.16+rke2r1"
+```
 
+## Accessing the Cluster from Outside with kubectl
+If everything went well there will be a copy of the `/etc/rancher/rke2/rke2.yaml` on buffer directory. To access the cluster replace 127.0.0.1 with the IP or hostname of your RKE2 server so in that way kubectl can now manage your RKE2 cluster from your workstation.
+
+[Reference](https://docs.rke2.io/cluster_access#accessing-the-cluster-from-outside-with-kubectl) 
 
 ## Table of Contents
 * **RKE2**
   [Official Website](https://docs.rke2.io/)
-* **RKE2 requirements**
   [RKE2 requirements](https://docs.rke2.io/install/requirements)
+  [RKE2 HA](https://docs.rke2.io/install/ha) 
+  [RKE2 Configuration options](https://docs.rke2.io/install/configuration) 
+  
 * **Ansible**
   * [Official Website](https://www.ansible.com)
   * [Official Docs](https://docs.ansible.com)

@@ -1,0 +1,3 @@
+---
+- include: rke2_agents.yml
+
