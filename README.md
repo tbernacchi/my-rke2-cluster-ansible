@@ -7,7 +7,7 @@
 ![RKE2](/.github/assets/img/rancher-rke2.png)
 
 <div align=>
-	<img align="center" width="200px" src=/.github/assets/img/ansible-logo.png>
+	<img align="right" width="200px" src=/.github/assets/img/ansible-logo.png>
 </div>
 
 ## Requirements
@@ -19,16 +19,15 @@
 
 If you got this error trying to install the ansible.utils:
 
-`ansible-galaxy collection install -r requirements.yml
+```ansible-galaxy collection install -r requirements.yml
 Starting galaxy collection install process
 Process install dependency map
-ERROR! Unknown error when attempting to call Galaxy at 'https://galaxy.ansible.com/api/': <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1123)>
+ERROR! Unknown error when attempting to call Galaxy at 'https://galaxy.ansible.com/api/': <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1123)>```
 
-This workaround here it worked for me.
+This workaround [here](https://stackoverflow.com/questions/40684543/how-to-make-python-use-ca-certificates-from-mac-os-truststore#:~:text=Solution%20for%20MacOS%20or%20Linux%20with%20latest%20Python%20versions%20installed%20either%20as%20standalone%20or%20via%20port%20or%20brew) it worked for me.
 
+## Usage
 
-
-Maybe it'll complain in the first run ``` terraform refresh && terraform apply ``` again and all should be well.
 
 
 ## Table of Contents
